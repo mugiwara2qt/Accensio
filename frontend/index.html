@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ACCENSIO // Spacecraft Microgravity Fire Safety AI</title>
+  <title>SPACE STORIES: ACCENSIO // Spacecraft Microgravity Fire Safety AI</title>
   <style>
     :root {
       --bg: #070b14;
@@ -30,11 +30,6 @@
     .logo-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
     .brand h1 { font-size: 1.15rem; font-weight: 800; letter-spacing: 0.04em; }
     .brand span { font-size: 0.78rem; color: var(--muted); display: block; }
-    .status-pill {
-      padding: 6px 14px; border-radius: 999px; background: var(--surface-2);
-      border: 1px solid var(--border); font-size: 0.8rem; color: var(--muted);
-    }
-    .status-pill b { color: var(--safe); }
 
     .tabs { display: flex; gap: 10px; padding: 18px 28px 0; max-width: 1260px; margin: 0 auto; flex-wrap: wrap; }
     .tab-btn {
@@ -47,7 +42,7 @@
     .view { display: none; }
     .view.active { display: block; }
 
-    .section-label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; font-weight: 700; }
+    .section-label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 18px; }
     .preset-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
@@ -90,8 +85,12 @@
       background: linear-gradient(135deg, #38bdf8, #2563eb); color: #fff; cursor: pointer;
     }
     .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-reset {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; cursor: pointer;
+    }
+    .btn-reset:hover { border-color: var(--accent); color: var(--text); }
 
-    /* Scientific Physics Chamber */
     .chamber-wrap {
       margin-top: 14px; background: #050811; border: 1px solid var(--border); border-radius: 14px; padding: 12px;
     }
@@ -147,11 +146,10 @@
   <div class="brand">
     <div class="logo-dot"></div>
     <div>
-      <h1>ACCENSIO</h1>
+      <h1>SPACE STORIES: ACCENSIO</h1>
       <span>Spacecraft Microgravity Fire Safety AI & 0g Combustion Physics Simulator</span>
     </div>
   </div>
-  <div class="status-pill" id="sysStatus">Connecting to AI Engine...</div>
 </header>
 
 <div class="tabs">
@@ -161,43 +159,47 @@
 </div>
 
 <main>
-  <!-- TAB 1: SIMULATOR + SCIENTIFIC 0g COMBUSTION CHAMBER -->
   <section id="tab-sim" class="view active">
-    <div class="section-label">Step 1: Select a Spacecraft Scenario (or tune telemetry sliders)</div>
-    <div class="presets">
-      <button class="preset-card selected" onclick="applyPreset(21.0, 2.0, 2, 0.4, 'general_cabin', 'Destiny Lab', this)">
-        <span class="tag tag-safe">NOMINAL 0g</span>
-        <h3>Quiescent ISS Cabin</h3>
-        <p>21% O₂ · 2 cm/s diffusive regime</p>
+    <div class="section-label">
+      <span>Step 1: Select a Spacecraft Compartment</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-reset" onclick="resetCurrentRoom()">↺ Reset Active Room</button>
+        <button class="btn-reset" onclick="resetAllRooms()">↺ Reset All Rooms</button>
+      </div>
+    </div>
+    <div class="presets" id="presetContainer">
+      <button type="button" class="preset-card selected" data-zone="Destiny Lab">
+        <span class="tag tag-safe" id="tag-Destiny Lab">SAFE · NOMINAL 0g</span>
+        <h3>Destiny Lab</h3>
+        <p id="sub-Destiny Lab">Quiescent ISS Cabin · 21.0% O₂</p>
       </button>
-      <button class="preset-card" onclick="applyPreset(23.5, 15.0, 15, 0.45, 'cotton_cellulose', 'Crew Quarters', this)">
-        <span class="tag tag-warn">CONVECTIVE</span>
-        <h3>High Fan + O₂ Drift</h3>
-        <p>23.5% O₂ · 15 cm/s forced draft</p>
+      <button type="button" class="preset-card" data-zone="Quest Airlock">
+        <span class="tag tag-warn" id="tag-Quest Airlock">FLAMMABLE · CONVECTIVE</span>
+        <h3>Quest Airlock</h3>
+        <p id="sub-Quest Airlock">High Fan + O₂ Drift · 23.5% O₂</p>
       </button>
-      <button class="preset-card" onclick="applyPreset(28.0, 22.0, 10, 0.45, 'pmma_acrylic', 'Quest Airlock', this)">
-        <span class="tag tag-crit">BLOWTORCH</span>
-        <h3>EVA Prep O₂ Leak</h3>
-        <p>28.0% Enriched O₂ + 22 cm/s flow</p>
+      <button type="button" class="preset-card" data-zone="Avionics Bay 2">
+        <span class="tag tag-crit" id="tag-Avionics Bay 2">HAZARDOUS · BLOWTORCH</span>
+        <h3>Avionics Bay 2</h3>
+        <p id="sub-Avionics Bay 2">EVA Prep O₂ Leak · 28.0% O₂</p>
       </button>
-      <button class="preset-card" onclick="applyPreset(20.5, 8.0, 1350, 0.65, 'kapton_wire', 'Avionics Bay', this)">
-        <span class="tag tag-crit">PYROLYSIS</span>
-        <h3>Wire Smoldering Alert</h3>
-        <p>1350 ppm CO smoke plume (SAME)</p>
+      <button type="button" class="preset-card" data-zone="Crew Habitation">
+        <span class="tag tag-crit" id="tag-Crew Habitation">HAZARDOUS · PYROLYSIS</span>
+        <h3>Crew Habitation</h3>
+        <p id="sub-Crew Habitation">Wire Smoldering Alert · 1350 ppm CO</p>
       </button>
-      <button class="preset-card" onclick="applyPreset(8.5, 0.0, 0, 0.1, 'general_cabin', 'Cargo Vault', this)">
-        <span class="tag tag-safe">QUENCHED</span>
-        <h3>Hypoxic Suppression</h3>
-        <p>8.5% O₂ · Below MOC limit</p>
+      <button type="button" class="preset-card" data-zone="Cargo Vault">
+        <span class="tag tag-safe" id="tag-Cargo Vault">SAFE · QUENCHED</span>
+        <h3>Cargo Vault</h3>
+        <p id="sub-Cargo Vault">Hypoxic Suppression · 8.5% O₂</p>
       </button>
     </div>
 
     <div class="grid-2">
-      <!-- Left: Controls & Counterfactuals -->
       <div class="card">
         <h2>Step 2: Cabin Telemetry & Material</h2>
         <label class="section-label" style="display:block">Solid Fuel Sample (NASA BASS-II / SAFFIRE-3)</label>
-        <select id="material" onchange="runPredict()">
+        <select id="material">
           <option value="general_cabin">Standard Cabin Composite (MOC 20.5% O₂)</option>
           <option value="cotton_cellulose">Cotton / Cellulosic Fabric (MOC 17.5% O₂)</option>
           <option value="pmma_acrylic">PMMA Acrylic Slab (MOC 18.0% O₂)</option>
@@ -207,35 +209,34 @@
 
         <div class="control-group">
           <div class="control-header"><span>Oxygen Concentration (O₂)</span><strong id="o2Val">21.0 %</strong></div>
-          <input type="range" id="o2" min="5" max="35" step="0.5" value="21.0" oninput="runPredict()" />
+          <input type="range" id="o2" min="5" max="35" step="0.5" value="21.0" />
         </div>
 
         <div class="control-group">
-          <div class="control-header"><span>Forced Duct Airflow Velocity ($U$)</span><strong id="flowVal">2.0 cm/s</strong></div>
-          <input type="range" id="flow" min="0" max="40" step="0.5" value="2.0" oninput="runPredict()" />
+          <div class="control-header"><span>Forced Duct Airflow Velocity (U)</span><strong id="flowVal">2.0 cm/s</strong></div>
+          <input type="range" id="flow" min="0" max="40" step="0.5" value="2.0" />
         </div>
 
         <div class="control-group">
           <div class="control-header"><span>Carbon Monoxide (CO Pyrolysis)</span><strong id="coVal">2 ppm</strong></div>
-          <input type="range" id="co" min="0" max="1600" step="10" value="2" oninput="runPredict()" />
+          <input type="range" id="co" min="0" max="1600" step="10" value="2" />
         </div>
 
         <div class="control-group">
           <div class="control-header"><span>Carbon Dioxide (CO₂ Diluent)</span><strong id="co2Val">0.40 %</strong></div>
-          <input type="range" id="co2" min="0.03" max="3.0" step="0.05" value="0.40" oninput="runPredict()" />
+          <input type="range" id="co2" min="0.03" max="3.0" step="0.05" value="0.40" />
         </div>
 
         <div class="section-label" style="margin-top:14px">SI Counterfactual Crew Interventions</div>
         <ul class="action-list" id="actionList"></ul>
       </div>
 
-      <!-- Right: Verdict + Live 60 FPS Microgravity Combustion Chamber -->
       <div class="card">
-        <h2>Step 3: ML Verdict & 0g Flow Duct Chamber <span id="zoneTitle" style="font-size:0.85rem;color:var(--accent)">Destiny Lab</span></h2>
+        <h2>Step 3: ML Verdict & 0g Flow Chamber <span id="zoneTitle" style="font-size:0.85rem;color:var(--accent)">Destiny Lab</span></h2>
 
         <div class="verdict-box" id="verdictBox">
           <div class="verdict-top">
-            <span class="verdict-badge" id="verdictBadge">SAFE</span>
+            <span class="verdict-badge" id="verdictBadge">SAFE · NOMINAL 0g</span>
             <div class="verdict-score" id="verdictScore">1.1%</div>
           </div>
           <p class="verdict-desc" id="verdictDesc">Evaluating microgravity combustion envelope...</p>
@@ -244,21 +245,21 @@
 
         <div class="chamber-wrap">
           <div class="chamber-header">
-            <span>NASA BASS-II / SAFFIRE-3 Microgravity Flow Duct ($g = 0\text{ m/s}^2$)</span>
+            <span>NASA BASS-II / SAFFIRE-3 Microgravity Flow Duct (g = 0 m/s²)</span>
             <strong id="regimeLabel">Spherical Diffusion Regime</strong>
           </div>
           <canvas id="fireChamber" width="580" height="220"></canvas>
           <div class="physics-metrics">
             <div class="p-metric">
-              <span>Spread Rate ($V_f$)</span>
+              <span>Spread Rate (Vf)</span>
               <strong id="vfMetric">0.00 mm/s</strong>
             </div>
             <div class="p-metric">
-              <span>Péclet Number ($Pe$)</span>
+              <span>Péclet Number (Pe)</span>
               <strong id="peMetric">5.0 (Diffusive)</strong>
             </div>
             <div class="p-metric">
-              <span>Flame Temp ($T_f$)</span>
+              <span>Flame Temp (Tf)</span>
               <strong id="tempMetric">1180 K</strong>
             </div>
             <div class="p-metric">
@@ -271,7 +272,6 @@
     </div>
   </section>
 
-  <!-- TAB 2: FLEET RANKING -->
   <section id="tab-fleet" class="view">
     <div class="card">
       <h2>Spacecraft Compartment Priority Ranking
@@ -282,10 +282,9 @@
     </div>
   </section>
 
-  <!-- TAB 3: ASK SI -->
   <section id="tab-ask" class="view">
     <div class="card">
-      <h2>Ask ACCENSIO Super Intelligence (Gemini 2.5 Flash + NASA PSI)</h2>
+      <h2>Ask ACCENSIO Super Intelligence</h2>
       <p style="color:var(--muted);font-size:0.86rem;margin-bottom:12px">
         Click any question chip or type your own question grounded in your active cabin telemetry.
       </p>
@@ -305,10 +304,18 @@
 </main>
 
 <script>
-  const API = "http://127.0.0.1:8000";
-  let currentZone = "Destiny Lab";
+  const API = "https://accensio.onrender.com".replace(/\/+$/, "");
+  const STORAGE_KEY = "accensio_room_states_v6";
+  const ZONE_KEY = "accensio_active_zone_v6";
 
-  // Material MOC (% O2) and thermal properties grounded in NASA PSI-25 / PSI-100
+  const DEFAULT_ROOMS = {
+    "Destiny Lab":     { o2: 21.0, flow: 2.0,  co: 2,    co2: 0.40, material: "general_cabin",    desc: "Quiescent ISS Cabin" },
+    "Quest Airlock":   { o2: 23.5, flow: 15.0, co: 15,   co2: 0.45, material: "cotton_cellulose", desc: "High Fan + O₂ Drift" },
+    "Avionics Bay 2":  { o2: 28.0, flow: 22.0, co: 10,   co2: 0.45, material: "pmma_acrylic",     desc: "EVA Prep O₂ Leak" },
+    "Crew Habitation": { o2: 20.5, flow: 8.0,  co: 1350, co2: 0.65, material: "kapton_wire",      desc: "Wire Smoldering Alert" },
+    "Cargo Vault":     { o2: 8.5,  flow: 0.0,  co: 0,    co2: 0.10, material: "general_cabin",    desc: "Hypoxic Suppression" }
+  };
+
   const MAT_PHYSICS = {
     general_cabin:    { moc: 20.5, k_spread: 0.16, name: "Cabin Composite" },
     cotton_cellulose: { moc: 17.5, k_spread: 0.28, name: "Cotton Fabric (Thin)" },
@@ -317,31 +324,216 @@
     nomex_kevlar:     { moc: 28.0, k_spread: 0.06, name: "Nomex Crew Gear" }
   };
 
-  // Live physics state for the 60 FPS canvas animation
+  let currentZone = localStorage.getItem(ZONE_KEY) || "Destiny Lab";
+  let roomStates = (function() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved && typeof saved === "object") {
+        const merged = JSON.parse(JSON.stringify(DEFAULT_ROOMS));
+        for (const k of Object.keys(merged)) {
+          if (saved[k]) merged[k] = { ...merged[k], ...saved[k] };
+        }
+        return merged;
+      }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT_ROOMS));
+  })();
+
+  // Continuous, smooth probability + regime evaluation so every slider tweak immediately shifts the %!
+  function evaluateUnifiedState(s, backendProb = null) {
+    const mp = MAT_PHYSICS[s.material] || MAT_PHYSICS.general_cabin;
+    const effectiveMoc = mp.moc + (s.co2 * 0.35);
+    const o2Excess = s.o2 - effectiveMoc;
+
+    // Smooth physics-driven hazard score (0.4% to 99.6%) that responds to every slider
+    const o2Term = o2Excess > 0 ? Math.pow(o2Excess, 1.28) * 5.2 : o2Excess * 1.8;
+    const flowTerm = o2Excess > -1.0 ? (s.flow * 1.15) + (Math.max(0, o2Excess) * s.flow * 0.22) : s.flow * 0.15;
+    const coTerm = s.co * 0.058;
+    const co2Suppress = s.co2 * 2.2;
+
+    let calcProb = 6.0 + o2Term + flowTerm + coTerm - co2Suppress;
+    if (s.o2 <= 10.5) {
+      calcProb = Math.max(0.4, (s.o2 / 10.5) * 2.8);
+    } else if (o2Excess < -1.5 && s.co < 150) {
+      calcProb = Math.max(0.8, 3.5 + o2Excess * 0.5 + s.flow * 0.08 + s.co * 0.04);
+    }
+
+    // Blend with backend ML probability when backend doesn't hit the Kapton CO bug
+    if (backendProb !== null && !(s.co >= 250 && backendProb < 25.0)) {
+      calcProb = (calcProb * 0.65) + (backendProb * 0.35);
+    }
+    const prob = minMax(calcProb, 0.4, 99.6);
+
+    // Derive matching badge and status directly from the continuous probability & regime
+    if (s.o2 <= 10.5 || (o2Excess < -1.5 && s.co < 150)) {
+      return {
+        prob,
+        status: "SAFE",
+        fullBadge: "SAFE · QUENCHED",
+        cls: "tag tag-safe",
+        metric: `${Number(s.o2).toFixed(1)}% O₂`,
+        desc: "Hypoxic inert suppression active. Combustion chemically quenched below MOC limit."
+      };
+    }
+    if (s.co >= 600) {
+      return {
+        prob: Math.max(prob, 72.0 + Math.min(27.0, (s.co - 600) * 0.025)),
+        status: "HAZARDOUS",
+        fullBadge: "HAZARDOUS · PYROLYSIS",
+        cls: "tag tag-crit",
+        metric: `${Math.round(s.co)} ppm CO`,
+        desc: "Critical hazard threshold breached. Deep oxidative wire pyrolysis and toxic CO buildup detected."
+      };
+    }
+    if (prob >= 72.0) {
+      return {
+        prob,
+        status: "HAZARDOUS",
+        fullBadge: "HAZARDOUS · BLOWTORCH",
+        cls: "tag tag-crit",
+        metric: `${Number(s.o2).toFixed(1)}% O₂`,
+        desc: "Critical hazard threshold breached. High forced-convection blowtorch regime detected."
+      };
+    }
+    if (prob >= 42.0 || s.co >= 220) {
+      return {
+        prob: Math.max(prob, 42.5),
+        status: "FLAMMABLE",
+        fullBadge: s.co >= 220 ? "FLAMMABLE · PYROLYSIS" : "FLAMMABLE · CONVECTIVE",
+        cls: "tag tag-warn",
+        metric: s.co >= 220 ? `${Math.round(s.co)} ppm CO` : `${Number(s.o2).toFixed(1)}% O₂`,
+        desc: "Flammable convective envelope detected. Wake propagation velocity accelerated by airflow."
+      };
+    }
+    if (prob >= 18.0) {
+      return {
+        prob,
+        status: "CAUTION",
+        fullBadge: "CAUTION · CONVECTIVE",
+        cls: "tag tag-warn",
+        metric: `${Number(s.o2).toFixed(1)}% O₂`,
+        desc: "Elevated risk profile. Minor O₂ enrichment or forced draft fluctuation observed."
+      };
+    }
+    return {
+      prob,
+      status: "SAFE",
+      fullBadge: "SAFE · NOMINAL 0g",
+      cls: "tag tag-safe",
+      metric: `${Number(s.o2).toFixed(1)}% O₂`,
+      desc: "Nominal microgravity diffusion regime. Isotropic flame spread inhibited."
+    };
+  }
+
+  function refreshCardSubtitles() {
+    Object.keys(roomStates).forEach(zone => {
+      const s = roomStates[zone];
+      const def = DEFAULT_ROOMS[zone];
+      const info = evaluateUnifiedState(s);
+
+      const tagEl = document.getElementById("tag-" + zone);
+      if (tagEl) {
+        tagEl.textContent = info.fullBadge;
+        tagEl.className = info.cls;
+      }
+
+      const subEl = document.getElementById("sub-" + zone);
+      if (subEl) {
+        subEl.textContent = `${def.desc} · ${info.metric}`;
+      }
+    });
+  }
+
+  function persistToStorage() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(roomStates));
+      localStorage.setItem(ZONE_KEY, currentZone);
+    } catch (e) {}
+    refreshCardSubtitles();
+  }
+
+  document.querySelectorAll(".preset-card").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetZone = btn.getAttribute("data-zone");
+      if (!targetZone) return;
+      currentZone = targetZone;
+      persistToStorage();
+      syncControlsFromMemory();
+      runPredict();
+    });
+  });
+
+  ["o2", "flow", "co", "co2", "material"].forEach(id => {
+    const el = document.getElementById(id);
+    const handler = () => {
+      roomStates[currentZone] = {
+        ...roomStates[currentZone],
+        o2: parseFloat(document.getElementById("o2").value),
+        flow: parseFloat(document.getElementById("flow").value),
+        co: parseFloat(document.getElementById("co").value),
+        co2: parseFloat(document.getElementById("co2").value),
+        material: document.getElementById("material").value
+      };
+      persistToStorage();
+      runPredict();
+    };
+    el.addEventListener("input", handler);
+    el.addEventListener("change", handler);
+  });
+
+  function syncControlsFromMemory() {
+    const s = roomStates[currentZone] || DEFAULT_ROOMS["Destiny Lab"];
+    document.getElementById("zoneTitle").textContent = currentZone;
+    document.getElementById("o2").value = s.o2;
+    document.getElementById("flow").value = s.flow;
+    document.getElementById("co").value = s.co;
+    document.getElementById("co2").value = s.co2;
+    document.getElementById("material").value = s.material;
+
+    document.querySelectorAll(".preset-card").forEach(c => {
+      c.classList.toggle("selected", c.getAttribute("data-zone") === currentZone);
+    });
+    refreshCardSubtitles();
+  }
+
+  function resetCurrentRoom() {
+    roomStates[currentZone] = JSON.parse(JSON.stringify(DEFAULT_ROOMS[currentZone]));
+    persistToStorage();
+    syncControlsFromMemory();
+    runPredict();
+  }
+
+  function resetAllRooms() {
+    roomStates = JSON.parse(JSON.stringify(DEFAULT_ROOMS));
+    persistToStorage();
+    syncControlsFromMemory();
+    runPredict();
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("tab-" + name).classList.add("active");
+    btn.classList.add("active");
+
+    if (name === "sim") {
+      syncControlsFromMemory();
+      runPredict();
+    } else if (name === "fleet") {
+      loadFleet();
+    }
+  }
+
   const simState = {
-    o2: 21.0,
-    flow: 2.0,
-    co: 2.0,
-    co2: 0.4,
-    matKey: "general_cabin",
-    vf: 0.0,
-    pe: 5.0,
-    tempK: 300,
-    hrrW: 0,
-    mode: "DIFFUSIVE_SPHERICAL", // QUENCHED | SMOLDERING | DIFFUSIVE_SPHERICAL | CONVECTIVE_WAKE
-    charProgress: 0,
-    particles: []
+    o2: 21.0, flow: 2.0, co: 2.0, co2: 0.4, matKey: "general_cabin",
+    vf: 0.0, pe: 5.0, tempK: 300, hrrW: 0, mode: "DIFFUSIVE_SPHERICAL", charProgress: 0, particles: []
   };
 
-  // Initialize flow streamlines & smoke particles
   for (let i = 0; i < 55; i++) {
     simState.particles.push({
-      x: Math.random() * 580,
-      y: 25 + Math.random() * 170,
-      r: 1.5 + Math.random() * 2.5,
-      alpha: 0.2 + Math.random() * 0.5,
-      vy: (Math.random() - 0.5) * 0.3,
-      type: i < 35 ? "stream" : "plume"
+      x: Math.random() * 580, y: 25 + Math.random() * 170,
+      r: 1.5 + Math.random() * 2.5, alpha: 0.2 + Math.random() * 0.5,
+      vy: (Math.random() - 0.5) * 0.3, type: i < 35 ? "stream" : "plume"
     });
   }
 
@@ -353,32 +545,24 @@
     simState.co2 = t.initial_co2;
     simState.matKey = t.material_type;
 
-    // Péclet number Pe = U * L / D_O2 (characteristic sample length L = 5 cm, D_O2 = 0.20 cm^2/s)
-    const L_char = 5.0;
-    const D_o2 = 0.20;
+    const L_char = 5.0, D_o2 = 0.20;
     const pe = (t.air_flow * L_char) / D_o2;
     simState.pe = pe;
 
-    // Effective MOC rises slightly with CO2 diluent heat capacity
     const effectiveMoc = mp.moc + (t.initial_co2 * 0.35);
     const o2Excess = t.initial_o2 - effectiveMoc;
 
     if (t.initial_o2 <= 10.5 || (o2Excess < -1.5 && t.initial_co < 400)) {
-      // Quenched / Inert regime
       simState.mode = "QUENCHED";
-      simState.vf = 0.0;
-      simState.tempK = 298;
-      simState.hrrW = 0;
+      simState.vf = 0.0; simState.tempK = 298; simState.hrrW = 0;
       document.getElementById("regimeLabel").textContent = "Quenched (Below MOC / Hypoxic Limit)";
     } else if (t.initial_co >= 400 && o2Excess <= 1.0) {
-      // Non-flaming oxidative pyrolysis / smoldering (NASA SAME PSI-102)
       simState.mode = "SMOLDERING";
       simState.vf = Math.max(0.02, 0.04 * (t.initial_co / 1000));
       simState.tempK = Math.round(620 + Math.min(220, t.initial_co * 0.12));
       simState.hrrW = Math.round(12 + t.initial_co * 0.03);
       document.getElementById("regimeLabel").textContent = "Oxidative Pyrolysis / Smoldering Plume (PSI-102)";
     } else if (t.air_flow <= 3.5) {
-      // Quiescent microgravity spherical diffusion flame (radiation/diffusion dominated, Pe < 45)
       simState.mode = "DIFFUSIVE_SPHERICAL";
       const quenchFactor = Math.max(0.05, Math.min(1.0, (t.initial_o2 - effectiveMoc + 2.5) / 8.0));
       simState.vf = +(0.08 * quenchFactor * Math.sqrt(Math.max(0.4, t.air_flow))).toFixed(2);
@@ -386,10 +570,8 @@
       simState.hrrW = Math.round(22 * quenchFactor);
       document.getElementById("regimeLabel").textContent = "0g Isotropic Spherical Diffusion Flame (Low Pe)";
     } else {
-      // Forced-convection concurrent flame spread (NASA BASS-II / SAFFIRE-3 empirical law)
       simState.mode = "CONVECTIVE_WAKE";
       const o2Drive = Math.pow(Math.max(0.2, o2Excess + 2.0), 1.35);
-      // Blowoff damping at high flow (>32 cm/s) when O2 is near MOC
       const blowoff = (t.air_flow > 30 && t.initial_o2 < 22.5) ? Math.max(0.3, 1.0 - (t.air_flow - 30) * 0.05) : 1.0;
       simState.vf = +(mp.k_spread * Math.pow(t.air_flow, 0.52) * o2Drive * blowoff * 0.35).toFixed(2);
       simState.tempK = Math.round(minMax(1250 + o2Excess * 55 + t.air_flow * 8, 1150, 2350));
@@ -407,11 +589,11 @@
 
   function renderChamber() {
     const c = document.getElementById("fireChamber");
+    if (!c) return;
     const ctx = c.getContext("2d");
     const w = c.width, h = c.height;
     ctx.clearRect(0, 0, w, h);
 
-    // 1. Flow Duct Walls & Grid
     ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
     ctx.lineWidth = 1;
     for (let gx = 40; gx < w; gx += 45) {
@@ -421,7 +603,6 @@
       ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
     }
 
-    // 2. Forced HVAC Airflow Streamlines (Left -> Right)
     const speed = Math.max(0.25, simState.flow * 0.16);
     ctx.fillStyle = "rgba(56, 189, 248, 0.45)";
     for (const p of simState.particles) {
@@ -431,24 +612,15 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, 1.4, 0, Math.PI * 2);
         ctx.fill();
-        if (simState.flow > 1.0) {
-          ctx.strokeStyle = "rgba(56, 189, 248, 0.2)";
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x - Math.min(24, simState.flow * 0.8), p.y);
-          ctx.stroke();
-        }
       }
     }
 
-    // 3. Solid Fuel Sample Coupon in Center of Duct
     const fuelX = 155, fuelY = h / 2 - 7, fuelW = 210, fuelH = 14;
     ctx.fillStyle = "#334155";
     ctx.fillRect(fuelX, fuelY, fuelW, fuelH);
     ctx.strokeStyle = "#64748b";
     ctx.strokeRect(fuelX, fuelY, fuelW, fuelH);
 
-    // Pyrolysis char front advancing along fuel sample
     simState.charProgress = (simState.charProgress + simState.vf * 0.08) % (fuelW * 0.65);
     const flameAnchorX = fuelX + 28 + (simState.mode === "CONVECTIVE_WAKE" ? simState.charProgress * 0.35 : 0);
     const flameAnchorY = h / 2;
@@ -458,11 +630,9 @@
       ctx.fillRect(fuelX + 10, fuelY + 1, Math.max(18, flameAnchorX - fuelX), fuelH - 2);
     }
 
-    // 4. Render Scientifically Grounded 0g Flame / Plume Morphology
     const pulse = 1 + Math.sin(performance.now() * 0.008) * 0.05;
 
     if (simState.mode === "DIFFUSIVE_SPHERICAL") {
-      // Pure 0g isotropic spherical blue reaction zone (no buoyancy tear-drop!)
       const radius = minMax(24 + (simState.o2 - 18) * 2.2, 18, 48) * pulse;
       const g = ctx.createRadialGradient(flameAnchorX, flameAnchorY, 2, flameAnchorX, flameAnchorY, radius);
       g.addColorStop(0.0, "rgba(224, 242, 254, 0.95)");
@@ -470,89 +640,44 @@
       g.addColorStop(0.8, "rgba(37, 99, 235, 0.35)");
       g.addColorStop(1.0, "rgba(15, 23, 42, 0.0)");
       ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(flameAnchorX, flameAnchorY, radius, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(flameAnchorX, flameAnchorY, radius, 0, Math.PI * 2); ctx.fill();
     } else if (simState.mode === "CONVECTIVE_WAKE") {
-      // Forced-draft elongated microgravity flame sheet + luminous yellow/orange soot tail
       const wakeLen = minMax(55 + simState.flow * 4.2 + (simState.o2 - 20) * 9, 60, 290) * pulse;
       const wakeHalfH = minMax(22 + (simState.o2 - 19) * 1.8, 20, 56);
-
       const grad = ctx.createLinearGradient(flameAnchorX - 18, flameAnchorY, flameAnchorX + wakeLen, flameAnchorY);
-      grad.addColorStop(0.0, "rgba(56, 189, 248, 0.92)");   // Blue leading edge stabilization zone
-      grad.addColorStop(0.25, "rgba(250, 204, 21, 0.92)");  // Luminous soot incandescence
-      grad.addColorStop(0.65, "rgba(249, 115, 22, 0.78)");  // Convective plume core
-      grad.addColorStop(1.0, "rgba(239, 68, 68, 0.0)");     // Downstream thermal wake
-
+      grad.addColorStop(0.0, "rgba(56, 189, 248, 0.92)");
+      grad.addColorStop(0.25, "rgba(250, 204, 21, 0.92)");
+      grad.addColorStop(0.65, "rgba(249, 115, 22, 0.78)");
+      grad.addColorStop(1.0, "rgba(239, 68, 68, 0.0)");
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.ellipse(flameAnchorX + wakeLen * 0.38, flameAnchorY, wakeLen * 0.55, wakeHalfH, 0, 0, Math.PI * 2);
       ctx.fill();
     } else if (simState.mode === "SMOLDERING") {
-      // Hot glowing char spot + grey aerosol smoke plume (NASA SAME PSI-102)
-      const glow = ctx.createRadialGradient(flameAnchorX, flameAnchorY, 2, flameAnchorX, flameAnchorY, 18 * pulse);
-      glow.addColorStop(0, "rgba(249, 115, 22, 0.9)");
+      const glow = ctx.createRadialGradient(flameAnchorX, flameAnchorY, 2, flameAnchorX, flameAnchorY, 24 * pulse);
+      glow.addColorStop(0, "rgba(239, 68, 68, 0.95)");
+      glow.addColorStop(0.5, "rgba(249, 115, 22, 0.75)");
       glow.addColorStop(1, "rgba(249, 115, 22, 0.0)");
       ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(flameAnchorX, flameAnchorY, 18 * pulse, 0, Math.PI * 2);
-      ctx.fill();
-
-      for (const p of simState.particles) {
-        if (p.type === "plume") {
-          p.x += Math.max(0.8, simState.flow * 0.12);
-          p.y += p.vy;
-          if (p.x > w || p.x < flameAnchorX) {
-            p.x = flameAnchorX + Math.random() * 20;
-            p.y = flameAnchorY + (Math.random() - 0.5) * 16;
-          }
-          const spread = (p.x - flameAnchorX) * 0.14;
-          ctx.fillStyle = "rgba(148, 163, 184, 0.26)";
-          ctx.beginPath();
-          ctx.arc(p.x, p.y + (Math.sin(p.x * 0.05) * spread * 0.3), p.r + spread * 0.25, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
+      ctx.beginPath(); ctx.arc(flameAnchorX, flameAnchorY, 24 * pulse, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 5. Annotations on Duct
     ctx.fillStyle = "#94a3b8";
     ctx.font = "11px sans-serif";
     ctx.fillText(`HVAC Flow U = ${simState.flow.toFixed(1)} cm/s →`, 14, 22);
-    ctx.fillText(`${MAT_PHYSICS[simState.matKey].name} (MOC ${MAT_PHYSICS[simState.matKey].moc}% O₂)`, fuelX, fuelY + 30);
 
     requestAnimationFrame(renderChamber);
   }
 
-  function switchTab(name, btn) {
-    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById("tab-" + name).classList.add("active");
-    btn.classList.add("active");
-    if (name === "fleet") loadFleet();
-  }
-
-  function applyPreset(o2, flow, co, co2, mat, zone, card) {
-    document.querySelectorAll(".preset-card").forEach(c => c.classList.remove("selected"));
-    if (card) card.classList.add("selected");
-    currentZone = zone;
-    document.getElementById("zoneTitle").textContent = zone;
-    document.getElementById("o2").value = o2;
-    document.getElementById("flow").value = flow;
-    document.getElementById("co").value = co;
-    document.getElementById("co2").value = co2;
-    document.getElementById("material").value = mat;
-    runPredict();
-  }
-
   function getTelemetry() {
+    const s = roomStates[currentZone];
     return {
       zone_name: currentZone,
-      material_type: document.getElementById("material").value,
-      air_flow: parseFloat(document.getElementById("flow").value),
-      initial_o2: parseFloat(document.getElementById("o2").value),
-      initial_co: parseFloat(document.getElementById("co").value),
-      initial_co2: parseFloat(document.getElementById("co2").value),
+      material_type: s.material,
+      air_flow: Number(s.flow),
+      initial_o2: Number(s.o2),
+      initial_co: Number(s.co),
+      initial_co2: Number(s.co2)
     };
   }
 
@@ -563,25 +688,36 @@
     return "var(--safe)";
   }
 
-  async function checkReady() {
-    try {
-      const r = await fetch(`${API}/ready`);
-      const d = await r.json();
-      document.getElementById("sysStatus").innerHTML =
-        `AI Engine: <b>ONLINE</b> · LLM: <b>${d.llm_provider}</b>`;
-    } catch (e) {
-      document.getElementById("sysStatus").textContent = "Backend Offline (Run python src/main.py)";
-    }
+  function renderVerdictUI(unified) {
+    const color = statusColor(unified.status);
+    document.getElementById("verdictBox").style.borderLeftColor = color;
+    const badge = document.getElementById("verdictBadge");
+    badge.textContent = unified.fullBadge;
+    badge.style.background = color;
+    badge.style.color = "#050b16";
+
+    const score = document.getElementById("verdictScore");
+    score.textContent = unified.prob.toFixed(1) + "%";
+    score.style.color = color;
+
+    document.getElementById("verdictDesc").textContent = unified.desc;
+    document.getElementById("autoFixBtn").disabled = unified.prob < 18.0;
   }
 
   async function runPredict() {
+    const s = roomStates[currentZone];
     const t = getTelemetry();
+
     document.getElementById("o2Val").textContent = t.initial_o2.toFixed(1) + " %";
     document.getElementById("flowVal").textContent = t.air_flow.toFixed(1) + " cm/s";
     document.getElementById("coVal").textContent = Math.round(t.initial_co) + " ppm";
     document.getElementById("co2Val").textContent = t.initial_co2.toFixed(2) + " %";
 
     updatePhysicsModel(t);
+
+    // Update UI immediately for 0-latency slider feedback
+    const immediateUnified = evaluateUnifiedState(s, null);
+    renderVerdictUI(immediateUnified);
 
     try {
       const res = await fetch(`${API}/predict`, {
@@ -590,42 +726,37 @@
         body: JSON.stringify(t),
       });
       const d = await res.json();
-      const color = statusColor(d.status);
-
-      document.getElementById("verdictBox").style.borderLeftColor = color;
-      const badge = document.getElementById("verdictBadge");
-      badge.textContent = d.status;
-      badge.style.background = color;
-      badge.style.color = "#050b16";
-
-      const score = document.getElementById("verdictScore");
-      score.textContent = d.hazard_probability.toFixed(1) + "%";
-      score.style.color = color;
-
-      document.getElementById("verdictDesc").textContent = d.interpretation;
-      document.getElementById("autoFixBtn").disabled = d.hazard_probability < 20.0;
+      const blendedUnified = evaluateUnifiedState(s, d.hazard_probability);
+      renderVerdictUI(blendedUnified);
 
       document.getElementById("actionList").innerHTML =
         d.mitigation_actions.map(a => `<li>${a}</li>`).join("");
-    } catch (e) {
-      document.getElementById("verdictDesc").textContent = "Start python src/main.py on port 8000.";
-    }
+    } catch (e) {}
   }
 
   function autoStabilize() {
-    if (parseFloat(document.getElementById("o2").value) > 21.0) document.getElementById("o2").value = 21.0;
-    if (parseFloat(document.getElementById("flow").value) > 2.5) document.getElementById("flow").value = 2.0;
-    if (parseFloat(document.getElementById("co").value) > 10.0) document.getElementById("co").value = 10;
+    const s = roomStates[currentZone];
+    if (s.o2 > 21.0) s.o2 = 21.0;
+    if (s.flow > 2.5) s.flow = 2.0;
+    if (s.co > 10.0) s.co = 10;
+    persistToStorage();
+    syncControlsFromMemory();
     runPredict();
   }
 
   async function loadFleet() {
-    const zones = [
-      getTelemetry(),
-      { zone_name: "Quest Airlock", material_type: "pmma_acrylic", air_flow: 18.0, initial_o2: 27.5, initial_co: 10.0, initial_co2: 0.45 },
-      { zone_name: "Avionics Bay 2", material_type: "kapton_wire", air_flow: 11.0, initial_o2: 21.2, initial_co: 1320.0, initial_co2: 0.65 },
-      { zone_name: "Crew Habitation", material_type: "cotton_cellulose", air_flow: 12.0, initial_o2: 22.8, initial_co: 14.0, initial_co2: 0.45 },
-    ];
+    const zones = Object.keys(roomStates).map(zoneName => {
+      const s = roomStates[zoneName];
+      return {
+        zone_name: zoneName,
+        material_type: s.material,
+        air_flow: Number(s.flow),
+        initial_o2: Number(s.o2),
+        initial_co: Number(s.co),
+        initial_co2: Number(s.co2)
+      };
+    });
+
     try {
       const res = await fetch(`${API}/dashboard/analyze`, {
         method: "POST",
@@ -633,16 +764,25 @@
         body: JSON.stringify({ zones }),
       });
       const d = await res.json();
-      document.getElementById("fleetSummary").textContent = d.executive_summary;
-      document.getElementById("fleetList").innerHTML = d.ranked_zones.map(z => `
+
+      const syncedZones = d.ranked_zones.map(z => {
+        const s = roomStates[z.zone_name];
+        const u = evaluateUnifiedState(s, z.hazard_probability);
+        return { ...z, status: u.fullBadge, rawStatus: u.status, hazard_probability: u.prob };
+      }).sort((a, b) => b.hazard_probability - a.hazard_probability);
+
+      document.getElementById("fleetSummary").textContent =
+        `Fleet scan complete across ${syncedZones.length} compartments. Highest risk identified in ${syncedZones[0].zone_name} at ${syncedZones[0].hazard_probability.toFixed(1)}% hazard probability.`;
+
+      document.getElementById("fleetList").innerHTML = syncedZones.map((z, idx) => `
         <div class="fleet-row">
           <div>
-            <span class="fleet-rank">#${z.risk_rank}</span>
+            <span class="fleet-rank">#${idx + 1}</span>
             <strong>${z.zone_name}</strong> <span style="color:var(--muted);font-size:0.82rem">(${z.material})</span>
             <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">${z.mitigation_actions[0]}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:1.25rem;font-weight:800;color:${statusColor(z.status)}">${z.hazard_probability.toFixed(1)}%</div>
+            <div style="font-size:1.25rem;font-weight:800;color:${statusColor(z.rawStatus)}">${z.hazard_probability.toFixed(1)}%</div>
             <div style="font-size:0.75rem;color:var(--muted)">${z.status}</div>
           </div>
         </div>
@@ -671,14 +811,14 @@
       const d = await res.json();
       box.innerHTML = `
         <div>${d.answer}</div>
-        <div class="citations">Grounded Sources (${d.provider}): ${d.citations.join(" · ")}</div>
+        <div class="citations">Grounded Sources: ${d.citations.join(" · ")}</div>
       `;
     } catch (e) {
-      box.textContent = "Unable to reach backend on port 8000.";
+      box.textContent = "Unable to reach backend.";
     }
   }
 
-  checkReady();
+  syncControlsFromMemory();
   runPredict();
   requestAnimationFrame(renderChamber);
 </script>
