@@ -68,16 +68,15 @@ class AssistantPayload(BaseModel):
     current_telemetry: Optional[TelemetryPayload] = None
 
 
+@app.get("/")
+def root():
+    return {"status": "online", "service": "ACCENSIO Fire Safety AI"}
+
+
 @app.get("/ready")
 def readiness_check():
     client = get_gemini_client()
-    gemini_ok = False
-    if client:
-        try:
-            # Quick connectivity check test
-            gemini_ok = True
-        except Exception:
-            gemini_ok = False
+    gemini_ok = client is not None
 
     return {
         "ready": True,
@@ -91,7 +90,6 @@ def readiness_check():
 
 
 def compute_physics_and_ml(t: TelemetryPayload):
-    # Material Minimum Oxygen Concentration (MOC) thresholds grounded in NASA PSI-25 / PSI-100
     moc_table = {
         "general_cabin": 20.5,
         "cotton_cellulose": 17.5,
@@ -103,7 +101,6 @@ def compute_physics_and_ml(t: TelemetryPayload):
     effective_moc = moc + (t.initial_co2 * 0.35)
     o2_excess = t.initial_o2 - effective_moc
 
-    # Model probability estimation
     if model is not None and scaler is not None:
         try:
             features = np.array([[t.initial_o2, t.air_flow, t.initial_co, t.initial_co2]])
@@ -114,7 +111,6 @@ def compute_physics_and_ml(t: TelemetryPayload):
     else:
         prob = max(0.0, min(100.0, (o2_excess * 4.5) + (t.air_flow * 0.8) + (t.initial_co * 0.04)))
 
-    # Determine status tier
     if t.initial_o2 <= 10.5 or o2_excess < -1.5:
         status = "SAFE"
         prob = min(prob, 3.2)
@@ -132,7 +128,6 @@ def compute_physics_and_ml(t: TelemetryPayload):
         status = "SAFE"
         interpretation = "Nominal microgravity diffusion regime. Isotropic flame spread inhibited."
 
-    # Generate SI Counterfactual Interventions
     actions = []
     if t.initial_o2 > 21.0:
         drop_o2 = round(t.initial_o2 - 20.8, 1)
@@ -162,7 +157,7 @@ def predict_endpoint(t: TelemetryPayload):
 @app.post("/dashboard/analyze")
 def dashboard_analyze(payload: FleetPayload):
     results = []
-    for idx, zone in enumerate(payload.zones):
+    for zone in payload.zones:
         prob, status, interpretation, actions = compute_physics_and_ml(zone)
         results.append({
             "zone_name": zone.zone_name,
@@ -174,7 +169,6 @@ def dashboard_analyze(payload: FleetPayload):
             "risk_rank": 0
         })
 
-    # Sort strictly by hazard probability descending
     results = sorted(results, key=lambda x: x["hazard_probability"], reverse=True)
     for r_idx, r in enumerate(results):
         r["risk_rank"] = r_idx + 1
